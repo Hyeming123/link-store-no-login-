@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+
+    <title>로고 및 바로가기 링크 추가 내비게이션 바</title>
+    <style>
+        /* 로고 이미지 스타일 */
+        .navbar-brand img {
+            height: 40px; /* 로고 이미지 높이 설정 */
+            width: auto;
+            margin-right: 5px;
+            display: none; /* 초기에는 숨김 */
+        }
+        /* 로고 텍스트 스타일 */
+        .navbar-brand .logo-text {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+    </style>
+  </head>
+  <body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <!-- 로고 영역 -->
+      <a class="navbar-brand" href="#">
+          <img id="logoImage" src="" alt="사이트 로고">
+          <span id="logoText" class="logo-text">Navbar</span>
+      </a>
+      
+      <!-- 바로가기 링크가 추가될 영역 -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav mr-auto" id="shortcutLinks">
+              <!-- 여기에 동적으로 링크가 추가됩니다. -->
+          </ul>
+      </div>
+      
+      <!-- 입력 폼 -->
+      <form class="form-inline" onsubmit="event.preventDefault(); updateLogoAndAddLink();">
+        <input class="form-control mr-sm-2" type="url" id="logoUrlInput" placeholder="URL (로고 또는 링크)" aria-label="add">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">add</button>
+      </form>
+    </nav>
+
+    <div class="container mt-4">
+        <h1>로고 및 바로가기 링크 추가 기능 테스트</h1>
+        <p>입력창에 URL을 입력하고 'add' 버튼을 누르면:</p>
+        <ul>
+            <li>URL이 이미지 주소라면 로고가 변경됩니다.</li>
+            <li>URL이 웹사이트 주소라면 내비게이션 바에 새 바로가기 링크가 추가됩니다.</li>
+            <li>**주의**: 현재는 입력된 URL이 이미지인지 웹사이트인지 구분하지 않고, **로고 변경을 시도한 후** 바로가기 링크를 추가합니다.</li>
+        </ul>
+        <p>로고 예시 URL: <code>https://picsum.photos/200/40</code></p>
+        <p>링크 예시 URL: <code>https://www.google.com</code></p>
+    </div>
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
+
+    <script>
+        function updateLogoAndAddLink() {
+            const urlInput = document.getElementById('logoUrlInput');
+            const newUrl = urlInput.value.trim();
+
+            if (!newUrl) {
+                alert('URL을 입력해주세요.');
+                return;
+            }
+
+            // 1. 로고 업데이트 시도 (이전 요청의 기능)
+            updateLogo(newUrl);
+
+            // 2. 바로가기 링크 추가 (새로운 요청의 기능)
+            addShortcutLink(newUrl);
+
+            // 입력 필드 초기화
+            urlInput.value = '';
+        }
+
+        function updateLogo(newUrl) {
+            const logoImage = document.getElementById('logoImage');
+            const logoText = document.getElementById('logoText');
+            
+            // 로고 업데이트 로직은 이전과 동일하게 유지
+            logoImage.src = newUrl;
+            logoImage.style.display = 'inline';
+            logoText.style.display = 'none';
+
+            // 이미지 로드 실패 시 처리
+            logoImage.onerror = function() {
+                // 로고 로드에 실패하면, 로고 업데이트는 취소하고 텍스트 로고를 다시 표시
+                logoImage.style.display = 'none';
+                logoText.style.display = 'inline';
+                logoImage.src = '';
+                // alert('로고 이미지 로드에 실패했습니다. 하지만 링크는 추가됩니다.');
+            };
+        }
+
+        function addShortcutLink(newUrl) {
+            const shortcutLinks = document.getElementById('shortcutLinks');
+            
+            // 링크 요소 생성
+            const listItem = document.createElement('li');
+            listItem.className = 'nav-item';
+            
+            const link = document.createElement('a');
+            link.className = 'nav-link';
+            link.href = newUrl;
+            link.target = '_blank'; // 새 탭에서 열기
+            
+            // 링크 텍스트는 URL의 호스트 이름으로 설정 (예: https://www.google.com -> google.com)
+            try {
+                const urlObject = new URL(newUrl);
+                let linkText = urlObject.hostname;
+                // 'www.' 제거
+                if (linkText.startsWith('www.')) {
+                    linkText = linkText.substring(4);
+                }
+                link.textContent = linkText;
+            } catch (e) {
+                // URL 형식이 아닐 경우 전체 URL을 텍스트로 사용
+                link.textContent = newUrl;
+            }
+
+            listItem.appendChild(link);
+            shortcutLinks.appendChild(listItem);
+        }
+    </script>
+
+  </body>
+</html>
