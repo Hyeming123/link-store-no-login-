@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase 로그인 - Link Store</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .toggle-form a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .toggle-form a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #fadbd8;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .success {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #d5f4e6;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .success.show {
+            display: block;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .user-info h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .user-email {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+        }
+
+        .logout-btn:hover {
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 로그인 폼 -->
+        <div id="loginForm" class="form-container active">
+            <h1>로그인</h1>
+            <p class="subtitle">Link Store에 접속하세요</p>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginEmail">이메일</label>
+                    <input type="email" id="loginEmail" placeholder="example@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">비밀번호</label>
+                    <input type="password" id="loginPassword" placeholder="비밀번호 입력" required>
+                </div>
+
+                <div class="loading" id="loginLoading">
+                    <div class="spinner"></div>
+                    <p>로그인 중...</p>
+                </div>
+
+                <button type="submit">로그인</button>
+            </form>
+
+            <div class="error" id="loginError"></div>
+            <div class="success" id="loginSuccess"></div>
+
+            <div class="toggle-form">
+                계정이 없으신가요? <a onclick="toggleForm()">회원가입</a>
+            </div>
+        </div>
+
+        <!-- 회원가입 폼 -->
+        <div id="signupForm" class="form-container">
+            <h1>회원가입</h1>
+            <p class="subtitle">새로운 계정을 만드세요</p>
+            
+            <form onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label for="signupEmail">이메일</label>
+                    <input type="email" id="signupEmail" placeholder="example@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="signupPassword">비밀번호</label>
+                    <input type="password" id="signupPassword" placeholder="비밀번호 입력 (6자 이상)" required minlength="6">
+                </div>
+
+                <div class="form-group">
+                    <label for="signupPasswordConfirm">비밀번호 확인</label>
+                    <input type="password" id="signupPasswordConfirm" placeholder="비밀번호 다시 입력" required minlength="6">
+                </div>
+
+                <div class="loading" id="signupLoading">
+                    <div class="spinner"></div>
+                    <p>회원가입 중...</p>
+                </div>
+
+                <button type="submit">회원가입</button>
+            </form>
+
+            <div class="error" id="signupError"></div>
+            <div class="success" id="signupSuccess"></div>
+
+            <div class="toggle-form">
+                이미 계정이 있으신가요? <a onclick="toggleForm()">로그인</a>
+            </div>
+        </div>
+
+        <!-- 대시보드 -->
+        <div id="dashboard" class="dashboard">
+            <div class="user-info">
+                <h2>환영합니다!</h2>
+                <div class="user-email" id="userEmail"></div>
+                <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
+            </div>
+            <div id="userContent">
+                <p style="text-align: center; color: #666;">로그인되었습니다. 이제 Link Store를 사용할 수 있습니다.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyAsgO9Zu8p3dCA2EBhqy9kgEfyXZZrxwXM",
+            authDomain: "link-store-no-login.firebaseapp.com",
+            projectId: "link-store-no-login",
+            storageBucket: "link-store-no-login.firebasestorage.app",
+            messagingSenderId: "368312230339",
+            appId: "1:368312230339:web:fdb745c5a9c67313789d76",
+            measurementId: "G-YVEX6VVYJ8"
+        };
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // 전역 변수로 auth 객체 노출
+        window.auth = auth;
+
+        // 인증 상태 감시
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // 사용자가 로그인한 상태
+                showDashboard(user);
+            } else {
+                // 사용자가 로그아웃한 상태
+                showLoginForm();
+            }
+        });
+
+        // 로그인 함수
+        window.handleLogin = async (event) => {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            const loadingDiv = document.getElementById('loginLoading');
+
+            errorDiv.classList.remove('show');
+            loadingDiv.classList.add('show');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                loadingDiv.classList.remove('show');
+                // 인증 상태 변경으로 인해 자동으로 대시보드로 이동
+            } catch (error) {
+                loadingDiv.classList.remove('show');
+                errorDiv.classList.add('show');
+                
+                if (error.code === 'auth/user-not-found') {
+                    errorDiv.textContent = '등록되지 않은 이메일입니다.';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorDiv.textContent = '비밀번호가 잘못되었습니다.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorDiv.textContent = '유효하지 않은 이메일입니다.';
+                } else {
+                    errorDiv.textContent = '로그인에 실패했습니다: ' + error.message;
+                }
+            }
+        };
+
+        // 회원가입 함수
+        window.handleSignup = async (event) => {
+            event.preventDefault();
+            
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
+            const errorDiv = document.getElementById('signupError');
+            const successDiv = document.getElementById('signupSuccess');
+            const loadingDiv = document.getElementById('signupLoading');
+
+            errorDiv.classList.remove('show');
+            successDiv.classList.remove('show');
+
+            // 비밀번호 확인
+            if (password !== passwordConfirm) {
+                errorDiv.textContent = '비밀번호가 일치하지 않습니다.';
+                errorDiv.classList.add('show');
+                return;
+            }
+
+            loadingDiv.classList.add('show');
+
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                loadingDiv.classList.remove('show');
+                successDiv.textContent = '회원가입이 완료되었습니다. 로그인해주세요.';
+                successDiv.classList.add('show');
+                
+                // 2초 후 로그인 폼으로 전환
+                setTimeout(() => {
+                    document.getElementById('signupEmail').value = '';
+                    document.getElementById('signupPassword').value = '';
+                    document.getElementById('signupPasswordConfirm').value = '';
+                    toggleForm();
+                }, 2000);
+            } catch (error) {
+                loadingDiv.classList.remove('show');
+                errorDiv.classList.add('show');
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    errorDiv.textContent = '이미 가입된 이메일입니다.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorDiv.textContent = '비밀번호가 너무 약합니다. (6자 이상)';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorDiv.textContent = '유효하지 않은 이메일입니다.';
+                } else {
+                    errorDiv.textContent = '회원가입에 실패했습니다: ' + error.message;
+                }
+            }
+        };
+
+        // 로그아웃 함수
+        window.handleLogout = async () => {
+            try {
+                await signOut(auth);
+                // 인증 상태 변경으로 인해 자동으로 로그인 폼으로 이동
+            } catch (error) {
+                alert('로그아웃에 실패했습니다: ' + error.message);
+            }
+        };
+
+        // 폼 전환 함수
+        window.toggleForm = () => {
+            document.getElementById('loginForm').classList.toggle('active');
+            document.getElementById('signupForm').classList.toggle('active');
+            
+            // 에러 메시지 초기화
+            document.getElementById('loginError').classList.remove('show');
+            document.getElementById('signupError').classList.remove('show');
+            document.getElementById('loginSuccess').classList.remove('show');
+            document.getElementById('signupSuccess').classList.remove('show');
+        };
+
+        // 대시보드 표시 함수
+        window.showDashboard = (user) => {
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('signupForm').classList.remove('active');
+            document.getElementById('dashboard').classList.add('active');
+            document.getElementById('userEmail').textContent = user.email;
+        };
+
+        // 로그인 폼 표시 함수
+        window.showLoginForm = () => {
+            document.getElementById('loginForm').classList.add('active');
+            document.getElementById('signupForm').classList.remove('active');
+            document.getElementById('dashboard').classList.remove('active');
+            
+            // 입력 필드 초기화
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+        };
+    </script>
+</body>
+</html>
