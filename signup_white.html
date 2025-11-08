@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>회원가입 - Link Store</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: #ffffff;
+    color: #333333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  header {
+    background-color: #ffffff;
+    padding: 20px;
+    text-align: center;
+    color: #333333;
+    font-size: 24px;
+    font-weight: bold;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  nav {
+    background-color: #f8f9fa;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  nav a {
+    color: #007bff;
+    text-decoration: none;
+    margin: 0 15px;
+    transition: color 0.3s;
+  }
+
+  nav a:hover {
+    color: #0056b3;
+  }
+
+  .auth-container {
+    max-width: 400px;
+    margin: 60px auto;
+    padding: 40px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .auth-container h1 {
+    text-align: center;
+    color: #333333;
+    margin-top: 0;
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333333;
+    font-weight: 500;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 12px;
+    background-color: #ffffff;
+    color: #333333;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+
+  .form-group input::placeholder {
+    color: #999999;
+  }
+
+  .form-group small {
+    display: block;
+    margin-top: 5px;
+    color: #666666;
+    font-size: 12px;
+  }
+
+  .btn-signup {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+  }
+
+  .btn-signup:hover {
+    background-color: #0056b3;
+  }
+
+  .btn-signup:active {
+    background-color: #004085;
+  }
+
+  .btn-signup:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+
+  .message {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+    display: none;
+    word-wrap: break-word;
+  }
+
+  .message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    display: block;
+    border: 1px solid #f5c6cb;
+  }
+
+  .message.success {
+    background-color: #d4edda;
+    color: #155724;
+    display: block;
+    border: 1px solid #c3e6cb;
+  }
+
+  .auth-link {
+    text-align: center;
+    margin-top: 20px;
+    color: #666666;
+    font-size: 14px;
+  }
+
+  .auth-link a {
+    color: #007bff;
+    text-decoration: none;
+    margin-left: 5px;
+  }
+
+  .auth-link a:hover {
+    text-decoration: underline;
+  }
+
+  .info-box {
+    background-color: #e7f3ff;
+    border-left: 4px solid #007bff;
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: #004085;
+  }
+
+  .loading {
+    display: none;
+    text-align: center;
+    color: #007bff;
+  }
+
+  .spinner {
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-right: 10px;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .debug-info {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 15px;
+    font-size: 11px;
+    color: #666666;
+    max-height: 100px;
+    overflow-y: auto;
+    display: none;
+  }
+</style>
+</head>
+<body>
+<header>Link Store</header>
+
+<nav>
+  <a href="index.html">메인</a>
+  <a href="singin.html">로그인</a>
+</nav>
+
+<div class="auth-container">
+  <h1>📝 회원가입</h1>
+  
+  <div class="info-box">
+    Firebase를 사용한 안전한 회원가입입니다.
+  </div>
+
+  <form id="signupForm" onsubmit="handleSignup(event)">
+    <div class="form-group">
+      <label for="email">이메일</label>
+      <input 
+        type="email" 
+        id="email" 
+        placeholder="example@example.com" 
+        required
+        autocomplete="email"
+      >
+      <small>유효한 이메일 주소를 입력해주세요.</small>
+    </div>
+
+    <div class="form-group">
+      <label for="password">비밀번호</label>
+      <input 
+        type="password" 
+        id="password" 
+        placeholder="최소 6자 이상" 
+        required
+        minlength="6"
+        autocomplete="new-password"
+      >
+      <small>최소 6자 이상</small>
+    </div>
+
+    <div class="form-group">
+      <label for="passwordConfirm">비밀번호 확인</label>
+      <input 
+        type="password" 
+        id="passwordConfirm" 
+        placeholder="비밀번호를 다시 입력하세요" 
+        required
+        minlength="6"
+        autocomplete="new-password"
+      >
+    </div>
+
+    <button type="submit" class="btn-signup" id="signupBtn">회원가입</button>
+  </form>
+
+  <div id="loading" class="loading">
+    <div class="spinner"></div>
+    회원가입 중...
+  </div>
+
+  <div id="message" class="message"></div>
+  <div id="debugInfo" class="debug-info"></div>
+
+  <div class="auth-link">
+    이미 계정이 있으신가요?
+    <a href="singin.html">로그인</a>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+// Firebase 설정 (사용자님의 프로젝트로 통일)
+const firebaseConfig = {
+  apiKey: "AIzaSyAsgO9Zu8p3dCA2EBhqy9kgEfyXZZrxwXM",
+  authDomain: "link-store-no-login.firebaseapp.com",
+  projectId: "link-store-no-login",
+  storageBucket: "link-store-no-login.firebasestorage.app",
+  messagingSenderId: "368312230339",
+  appId: "1:368312230339:web:fdb745c5a9c67313789d76",
+  measurementId: "G-YVEX6VVYJ8"
+};
+
+let auth;
+
+try {
+  const app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  
+  // 로컬 저장소 활성화
+  setPersistence(auth, browserLocalPersistence)
+    .catch((error) => {
+      console.error('Persistence 설정 오류:', error);
+    });
+
+  console.log('Firebase 초기화 성공');
+} catch (error) {
+  console.error('Firebase 초기화 오류:', error);
+  showDebugInfo('Firebase 초기화 오류: ' + error.message);
+}
+
+window.handleSignup = async function(event) {
+  event.preventDefault();
+
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const passwordConfirm = document.getElementById('passwordConfirm').value;
+  const messageEl = document.getElementById('message');
+  const signupBtn = document.getElementById('signupBtn');
+  const loadingEl = document.getElementById('loading');
+
+  console.log('회원가입 시도:', { email, passwordLength: password.length });
+
+  // 입력값 검증
+  if (!email || !password || !passwordConfirm) {
+    showMessage('모든 필드를 입력해주세요.', 'error');
+    return;
+  }
+
+  if (password.length < 6) {
+    showMessage('비밀번호는 최소 6자 이상이어야 합니다.', 'error');
+    return;
+  }
+
+  if (password !== passwordConfirm) {
+    showMessage('비밀번호가 일치하지 않습니다.', 'error');
+    document.getElementById('password').value = '';
+    document.getElementById('passwordConfirm').value = '';
+    return;
+  }
+
+  signupBtn.disabled = true;
+  loadingEl.style.display = 'block';
+
+  try {
+    console.log('Firebase 회원가입 시작...');
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    console.log('회원가입 성공:', user.uid);
+    showMessage('✅ 회원가입 성공! 로그인 페이지로 이동합니다...', 'success');
+    
+    setTimeout(() => {
+      window.location.href = 'singin.html';
+    }, 1500);
+  } catch (error) {
+    console.error('회원가입 오류:', error);
+    loadingEl.style.display = 'none';
+    signupBtn.disabled = false;
+
+    let errorMessage = '회원가입에 실패했습니다.';
+    let debugMessage = `오류 코드: ${error.code}\n오류 메시지: ${error.message}`;
+    
+    if (error.code === 'auth/email-already-in-use') {
+      errorMessage = '이미 사용 중인 이메일입니다.';
+    } else if (error.code === 'auth/invalid-email') {
+      errorMessage = '유효하지 않은 이메일 형식입니다.';
+    } else if (error.code === 'auth/weak-password') {
+      errorMessage = '비밀번호가 너무 약합니다. 더 강력한 비밀번호를 사용해주세요.';
+    } else if (error.code === 'auth/operation-not-allowed') {
+      errorMessage = '이메일/비밀번호 가입이 비활성화되어 있습니다. Firebase 콘솔에서 활성화해주세요.';
+    } else if (error.code === 'auth/network-request-failed') {
+      errorMessage = '네트워크 연결을 확인해주세요.';
+    }
+
+    showMessage(`❌ ${errorMessage}`, 'error');
+    showDebugInfo(debugMessage);
+  }
+};
+
+function showMessage(text, type) {
+  const messageEl = document.getElementById('message');
+  messageEl.textContent = text;
+  messageEl.className = `message ${type}`;
+}
+
+function showDebugInfo(text) {
+  const debugEl = document.getElementById('debugInfo');
+  debugEl.textContent = text;
+  debugEl.style.display = 'block';
+}
+
+// 페이지 로드 시 이미 로그인되어 있으면 index.html로 리다이렉트
+window.addEventListener('load', () => {
+  if (auth) {
+    const user = auth.currentUser;
+    if (user) {
+      console.log('이미 로그인됨:', user.email);
+      window.location.href = 'index.html';
+    }
+  }
+  
+  document.getElementById('email').focus();
+});
+</script>
+</body>
+</html>
